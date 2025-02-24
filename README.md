@@ -1,1 +1,1 @@
-Basic Logscale queries to help you with the triage in Logscale. 
+Basic Logscale queries for the fellow analysts to help with the triage in Logscale. 
