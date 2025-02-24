@@ -3,71 +3,60 @@ ComputerName= <host> #event_simpleName=UserLog*
 | time := formatTime("%Y/%m/%d %H:%M:%S", field=timestamp, timezone=Z)
 | table([time, #event_simpleName, ComputerName, LogonDomain, UserName, LogonType, RemoteIP], limit=10000, sortby=time, order=des)
 
-
-### 2. impacket usage ###
-ComputerName= <host> CommandLine="cmd.exe /Q /c *"
-| time := formatTime("%Y/%m/%d %H:%M:%S", field=timestamp, timezone=Z)
-| table([time, ComputerName, LocalAddressIP4, UserName, UserSid, #event_simpleName, CommandLine, RemoteAddressIP4], limit=10000, sortby=time, order=des)
-
-### 3. Logins from RemoteIPs  ###
+### 2. Logins from RemoteIPs  ###
 ComputerName= <host>  #event_simpleName= UserLogon RemoteAddressIP4=*
 |table([ComputerName,#event_simpleName, UserName, RemoteAddressIP4, LogonType_decimal])
 
-### 4. Search Mark of the Web information for binaries downloaded from Web (it's missing time to time) ###
+### 3. Search Mark of the Web information for binaries downloaded from Web (it's missing time to time) ###
 ComputerName= <host> #event_simpleName=Motw*
 | time := formatTime("%Y/%m/%d %H:%M:%S", field=timestamp, timezone=Z)
 | table([time, TargetFileName, HostUrl, ReferrerUrl], limit=10000, sortby=time, order=des)
 
-### 5. HTTP Request ###
+### 4. HTTP Request ###
 ComputerName = <host> #event_simpleName=HttpRequestDetect HttpRequestHeader=*
 | time := formatTime("%Y/%m/%d %H:%M:%S", field=timestamp, timezone=Z)
 | table([time, ImageFileName , HttpRequestHeader], limit=10000, sortby=time, order=des)
 
-### 6. impacket usage ###
-ComputerName = <host> CommandLine="cmd.exe /Q /c *"
-| time := formatTime("%Y/%m/%d %H:%M:%S", field=timestamp, timezone=Z)
-| table([time, ComputerName, LocalAddressIP4, UserName, UserSid, #event_simpleName, CommandLine, RemoteAddressIP4], limit=10000, sortby=time, order=des)
-
-### 7. DNS Requests ###
+### 5. DNS Requests ###
 ComputerName = <host>  #event_simpleName=Dns* OR #event_simpleName= SuspiciousDns*
 | time := formatTime("%Y/%m/%d %H:%M:%S", field=timestamp, timezone=Z)
 | table([time, ContextBaseFileName, DomainName], limit=10000, sortby=time, order=des)
 
-### 8. Network Activities (can add a specific port in the RPORT field based on the need) ###
+### 6. Network Activities (can add a specific port in the RPORT field based on the need) ###
 ComputerName = <host> #event_simpleName=Network* RPort= <*,22,443,445>
 | time := formatTime("%Y/%m/%d %H:%M:%S", field=timestamp, timezone=Z)
 | table([time, ContextBaseFileName, LocalAddressIP4, LPort, RemoteAddressIP4, RPort], limit=10000, sortby=time, order=asc)
 
-### 9. Process Injection events ###
+### 7. Process Injection events ###
 ComputerName = <host> #event_simpleName=ProcessInjection InjectorImageFileName=< add a filename or *> 
 | time := formatTime("%Y/%m/%d %H:%M:%S", field=timestamp, timezone=Z)
 | table([time, InjectorImageFileName, ContextProcessId, InjecteeImageFileName, TargetProcessId], limit=10000, sortby=time, order=des)
 
-### 10. Search for Installed Apps on a host ###
+### 8. Search for Installed Apps on a host ###
 ComputerName = <host> #event_simpleName="InstalledApplication"
 | time := formatTime("%Y/%m/%d %H:%M:%S", field=timestamp, timezone=Z)
 | table([time, AppVendor, AppProductId, AppPath, AppVersion], limit=10000, sortby=time, order=asc)
 
-### 11. Module Detect Info (IF UI not helping with the detection) ###
+### 9. Module Detect Info (IF UI not helping with the detection) ###
 ComputerName = <host> #event_simpleName="ModuleDetectInfo"
 | time := formatTime("%Y/%m/%d %H:%M:%S", field=timestamp, timezone=Z)
 | table([time, FileName, SHA256HashData, TargetFileName], limit=10000, sortby=time, order=des)
 
-### 12. File Detect Info (IF UI not helping with the detection Or there might be more than shown in the UI) ###
+### 10. File Detect Info (IF UI not helping with the detection Or there might be more than shown in the UI) ###
 ComputerName = <host> "#event_simpleName" = FileDetectInfo
 | time := formatTime("%Y/%m/%d %H:%M:%S", field=timestamp, timezone=Z)
 | table([time, FileName, SHA256HashData, TargetFileName], limit=10000, sortby=time, order=des)
 
-### 13. Scheduled Task Creation ###
+### 11. Scheduled Task Creation ###
 ComputerName= <host> #event_simpleName=/ScheduledTask/i
 TaskName!="*Microsoft\\Windows\\Windows Defender\\Windows Defender Scheduled Scan*"
 TaskName!= <add any other known benign task to the list>
 |table([@timestamp, #event_simpleName, UserName, TargetProcessId, TaskExecArguments, TaskExecCommand, TaskName],limit=20000, sortby=@timestamp, order=des)
 
-### 15. Lnk files ###
+### 12. Lnk files ###
 ComputerName= <host> LinkName=*
 | table([@timestamp, LinkName, ImageFileName, ParentBaseFileName, CommandLine],sortby=@timestamp, order=asc, limit=20000)
 
-### 16. File related events (write, rename, delete) ###
+### 13. File related events (write, rename, delete) ###
 ComputerName= <host> #event_simpleName= /Written/i OR #event_simpleName= /File/i
 |table(@timestamp, #event_simpleName, SourceFileName, TargetFileName, SHA256HashData, HostUrl, ReferrerUrl], limit=20000, sortby=@timestamp, order=asc)
